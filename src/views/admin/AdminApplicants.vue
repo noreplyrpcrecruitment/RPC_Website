@@ -305,10 +305,9 @@ async function deleteApplicant(applicant) {
     `PERMANENT DELETE\n\n` +
       `Applicant: ${applicant.name}\n` +
       `Position: ${applicant.position}\n\n` +
-      `This will permanently delete this application and its uploaded ` +
-      `documents. The applicant's personal record will only be deleted ` +
-      `if they have no other applications.\n\n` +
-      `This action cannot be undone. Continue?`,
+      `This will permanently delete this applicant, all their applications, ` +
+      `and uploaded documents. This action cannot be undone.\n\n` +
+      `Continue?`,
   )
 
   if (!confirmed) return
@@ -317,94 +316,39 @@ async function deleteApplicant(applicant) {
   errorMessage.value = ''
 
   try {
-    // 1. Retrieve the application and document paths.
-    const { data: application, error: fetchError } = await supabase
-      .from('applications')
-      .select(
-        `
-        id,
-        applicant_id,
-        cv_url,
-        cover_letter_url,
-        photo_url,
-        ktp_url,
-        skck_url,
-        health_certificate_url,
-        work_experience_url,
-        ijazah_url
-      `,
-      )
-      .eq('id', applicant.applicationId)
-      .single()
+    // Get the current Supabase login session.
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
 
-    if (fetchError) throw fetchError
+    if (sessionError) throw sessionError
 
-    // 2. Collect document paths.
-    const documentPaths = [
-      ...new Set(
-        documentColumns
-          .map((column) => application[column])
-          .filter(Boolean)
-          .map((path) => String(path).trim().replace(/^\/+/, ''))
-          .filter(Boolean),
-      ),
-    ]
-
-    // 3. Delete uploaded files.
-    if (documentPaths.length > 0) {
-      const { error: storageError } = await supabase.storage.from(BUCKET_NAME).remove(documentPaths)
-
-      if (storageError) {
-        throw new Error(
-          `Could not delete uploaded documents: ${storageError.message}. ` +
-            'The database records have not been deleted.',
-        )
-      }
+    if (!session?.access_token) {
+      throw new Error('Your session has expired. Please log in again.')
     }
 
-    // 4. Delete the selected application.
-    const { data: deletedRows, error: deleteApplicationError } = await supabase
-      .from('applications')
-      .delete()
-      .eq('id', application.id)
-      .select('id')
+    // Call the secure server-side deletion API.
+    const response = await fetch(
+      `/api/admin/delete-applicant?applicantId=${encodeURIComponent(applicant.applicantId)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      },
+    )
 
-    if (deleteApplicationError) throw deleteApplicationError
+    const result = await response.json().catch(() => ({}))
 
-    if (!deletedRows || deletedRows.length === 0) {
-      throw new Error('The application was not deleted. Check the Supabase DELETE policy.')
+    if (!response.ok) {
+      throw new Error(result.error || `Delete failed (${response.status}).`)
     }
 
-    // 5. Check for remaining applications.
-    const { data: remainingApplications, error: remainingError } = await supabase
-      .from('applications')
-      .select('id')
-      .eq('applicant_id', application.applicant_id)
-      .limit(1)
-
-    if (remainingError) {
-      throw new Error(
-        'The application was deleted, but checking other applications ' +
-          `failed: ${remainingError.message}. The personal record was kept.`,
-      )
-    }
-
-    // 6. Delete the applicant record if no applications remain.
-    if (!remainingApplications || remainingApplications.length === 0) {
-      const { error: deleteApplicantError } = await supabase
-        .from('applicants')
-        .delete()
-        .eq('id', application.applicant_id)
-
-      if (deleteApplicantError) {
-        throw new Error(
-          'The application and its documents were deleted, but the ' +
-            `personal record could not be deleted: ${deleteApplicantError.message}`,
-        )
-      }
-    }
-
-    alert(`Application for ${applicant.name} was deleted.`)
+    alert(
+      `Applicant ${applicant.name} was deleted successfully.\n` +
+        `Documents deleted: ${result.deletedFiles ?? 0}`,
+    )
 
     await loadApplicants()
   } catch (error) {
@@ -412,7 +356,7 @@ async function deleteApplicant(applicant) {
 
     alert(
       `Delete failed:\n${error.message || 'Unknown error'}\n\n` +
-        'Check the Supabase DELETE policies and Storage permissions.',
+        'No further action was taken by this page. Check the server logs if needed.',
     )
 
     await loadApplicants()
