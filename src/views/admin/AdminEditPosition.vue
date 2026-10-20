@@ -48,21 +48,14 @@
 
                 <!-- DEPARTMENT -->
                 <div class="admin-form-field">
-                  <label> Department <span>*</span> </label>
+                  <label>Department <span>*</span></label>
 
-                  <select v-model="form.department" required>
-                    <option value="" disabled>Select Department</option>
-
-                    <option value="IT Department">IT Department</option>
-
-                    <option value="Engineering Department">Engineering Department</option>
-
-                    <option value="Engineer Department">Engineer Department</option>
-
-                    <option value="Production Department">Production Department</option>
-
-                    <option value="IHR Department">IHR Department</option>
-                  </select>
+                  <input
+                    v-model="form.department"
+                    type="text"
+                    placeholder="Masukkan nama department"
+                    required
+                  />
                 </div>
 
                 <!-- EMPLOYMENT TYPE -->

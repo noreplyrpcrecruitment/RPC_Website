@@ -6,66 +6,51 @@
       <AdminTopbar />
 
       <main class="admin-content">
-        <!-- Back -->
         <router-link to="/admin/open-positions" class="admin-back-link">
           ← Back to Open Positions
         </router-link>
 
-        <!-- Page Header -->
         <div class="admin-page-heading">
           <h1>Add Position</h1>
           <p>Create a new job opening to be displayed on the career portal.</p>
         </div>
 
-        <!-- Form Card -->
         <section class="admin-form-card">
           <div class="admin-form-section-title">POSITION INFORMATION</div>
 
           <form @submit.prevent="savePosition">
-            <!-- Position Information -->
             <div class="admin-form-grid">
               <!-- Position Title -->
               <div class="admin-form-group">
-                <label> Position Title <span>*</span> </label>
-
+                <label>Position Title <span>*</span></label>
                 <input
                   v-model="form.title"
                   type="text"
                   placeholder="e.g. Engineering"
                   :disabled="isSaving"
+                  required
                 />
               </div>
 
-              <!-- Department -->
+              <!-- Department: Text Input -->
               <div class="admin-form-group">
-                <label> Department <span>*</span> </label>
-
-                <select v-model="form.department" :disabled="isSaving">
-                  <option value="">Select Department (IT, Technology, Data, Engineering...)</option>
-
-                  <option value="Production Department">Production Department</option>
-
-                  <option value="Engineering Department">Engineering Department</option>
-
-                  <option value="Engineer Department">Engineer Department</option>
-
-                  <option value="IT Department">IT Department</option>
-
-                  <option value="IHR Department">IHR Department</option>
-                </select>
+                <label>Department <span>*</span></label>
+                <input
+                  v-model="form.department"
+                  type="text"
+                  placeholder="Enter department name"
+                  :disabled="isSaving"
+                  required
+                />
               </div>
 
               <!-- Employment Type -->
               <div class="admin-form-group">
-                <label> Employment Type <span>*</span> </label>
-
-                <select v-model="form.job_type" :disabled="isSaving">
-                  <option value="">Select Type (Full-time, Contract, Internship...)</option>
-
+                <label>Employment Type <span>*</span></label>
+                <select v-model="form.job_type" :disabled="isSaving" required>
+                  <option value="" disabled>Select Employment Type</option>
                   <option value="Full Time">Full Time</option>
-
                   <option value="Contract">Contract</option>
-
                   <option value="Internship">Internship</option>
                 </select>
               </div>
@@ -75,12 +60,12 @@
 
             <!-- Description -->
             <div class="admin-form-group admin-form-full">
-              <label> DESKRIPSI PEKERJAAN <span>*</span> </label>
-
+              <label>DESKRIPSI PEKERJAAN <span>*</span></label>
               <textarea
                 v-model="form.description"
                 placeholder="Tuliskan deskripsi lengkap mengenai peran, visi, tim, dan kontribusi posisi ini di RPC..."
                 :disabled="isSaving"
+                required
               ></textarea>
             </div>
 
@@ -88,32 +73,30 @@
 
             <!-- Responsibilities -->
             <div class="admin-form-group admin-form-full">
-              <label> TANGGUNG JAWAB <span>*</span> </label>
-
+              <label>TANGGUNG JAWAB <span>*</span></label>
               <textarea
                 v-model="form.responsibilities"
                 placeholder="Melakukan perancangan dan pengembangan solusi teknis.
 Menganalisis dan memecahkan masalah teknis."
                 :disabled="isSaving"
+                required
               ></textarea>
-
-              <small> Masukkan setiap tanggung jawab pada baris baru. </small>
+              <small>Masukkan setiap tanggung jawab pada baris baru.</small>
             </div>
 
             <div class="admin-form-divider"></div>
 
             <!-- Requirements -->
             <div class="admin-form-group admin-form-full">
-              <label> KUALIFIKASI <span>*</span> </label>
-
+              <label>KUALIFIKASI <span>*</span></label>
               <textarea
                 v-model="form.requirements"
                 placeholder="Minimal Diploma atau Sarjana di bidang Teknik.
 Memiliki kemampuan analisis dan komunikasi yang baik."
                 :disabled="isSaving"
+                required
               ></textarea>
-
-              <small> Masukkan setiap kualifikasi pada baris baru. </small>
+              <small>Masukkan setiap kualifikasi pada baris baru.</small>
             </div>
 
             <!-- Error -->
@@ -126,7 +109,7 @@ Memiliki kemampuan analisis dan komunikasi yang baik."
               {{ successMessage }}
             </div>
 
-            <!-- Bottom Actions -->
+            <!-- Actions -->
             <div class="admin-form-actions">
               <router-link to="/admin/open-positions" class="admin-cancel-btn">
                 Cancel
@@ -179,16 +162,13 @@ export default {
       this.formError = ''
       this.successMessage = ''
 
-      // ==========================================
-      // VALIDATION
-      // ==========================================
-
+      // Validation
       if (!this.form.title.trim()) {
         this.formError = 'Position Title is required.'
         return
       }
 
-      if (!this.form.department) {
+      if (!this.form.department.trim()) {
         this.formError = 'Department is required.'
         return
       }
@@ -213,10 +193,6 @@ export default {
         return
       }
 
-      // ==========================================
-      // START SAVE
-      // ==========================================
-
       this.isSaving = true
 
       try {
@@ -228,15 +204,12 @@ export default {
         console.log('Department:', this.form.department)
         console.log('Employment Type:', this.form.job_type)
 
-        // ==========================================
-        // INSERT INTO SUPABASE
-        // ==========================================
-
+        // Insert into Supabase
         const { data, error } = await supabase
           .from('jobs')
           .insert({
             title: this.form.title.trim(),
-            department: this.form.department,
+            department: this.form.department.trim(),
             location: this.form.location || null,
             job_type: this.form.job_type,
             description: this.form.description.trim(),
@@ -254,10 +227,7 @@ export default {
 
         this.successMessage = 'Position created successfully.'
 
-        // ==========================================
-        // REDIRECT
-        // ==========================================
-
+        // Redirect after successful save
         setTimeout(() => {
           this.$router.push('/admin/open-positions')
         }, 700)
@@ -283,7 +253,6 @@ export default {
 }
 
 /* Back link */
-
 .admin-back-link {
   display: inline-block;
   margin-bottom: 12px;
@@ -298,7 +267,6 @@ export default {
 }
 
 /* Heading */
-
 .admin-page-heading {
   margin-bottom: 18px;
 }
@@ -317,18 +285,16 @@ export default {
 }
 
 /* Form card */
-
 .admin-form-card {
   width: 100%;
+  box-sizing: border-box;
+  padding: 22px 20px 20px;
   background: #ffffff;
   border: 1px solid #e0e5ea;
   border-radius: 6px;
-  padding: 22px 20px 20px;
-  box-sizing: border-box;
 }
 
 /* Section title */
-
 .admin-form-section-title {
   margin-bottom: 20px;
   color: #263b53;
@@ -337,7 +303,6 @@ export default {
 }
 
 /* Grid */
-
 .admin-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -345,7 +310,6 @@ export default {
 }
 
 /* Form group */
-
 .admin-form-group {
   display: flex;
   flex-direction: column;
@@ -363,7 +327,6 @@ export default {
 }
 
 /* Inputs */
-
 .admin-form-group input,
 .admin-form-group select,
 .admin-form-group textarea {
@@ -415,13 +378,11 @@ export default {
 }
 
 /* Full width */
-
 .admin-form-full {
   width: 100%;
 }
 
 /* Divider */
-
 .admin-form-divider {
   height: 1px;
   margin: 16px 0 18px;
@@ -429,7 +390,6 @@ export default {
 }
 
 /* Helper text */
-
 .admin-form-group small {
   margin-top: 6px;
   color: #778597;
@@ -437,7 +397,6 @@ export default {
 }
 
 /* Error */
-
 .admin-form-error {
   margin-top: 16px;
   padding: 9px 10px;
@@ -449,7 +408,6 @@ export default {
 }
 
 /* Success */
-
 .admin-form-success {
   margin-top: 16px;
   padding: 9px 10px;
@@ -461,7 +419,6 @@ export default {
 }
 
 /* Actions */
-
 .admin-form-actions {
   display: flex;
   align-items: center;
@@ -514,7 +471,6 @@ export default {
 }
 
 /* Responsive */
-
 @media (max-width: 900px) {
   .admin-form-grid {
     grid-template-columns: 1fr;

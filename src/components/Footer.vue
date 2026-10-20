@@ -3,11 +3,11 @@
     <div class="footer-main site-container">
       <!-- RPC BRAND -->
       <div class="footer-brand">
-        <img src="/assets/rpc-logo.png" alt="RPC Indonesia" />
+        <img src="/assets/RPC.png" alt="RPC Indonesia" />
 
         <strong>RPC INDONESIA</strong>
 
-        <span>&lt;text&gt;</span>
+        <span>Discover career opportunities at RPC Indonesia and grow your future with us.</span>
       </div>
 
       <!-- CAREER PROGRAM -->
@@ -34,12 +34,12 @@
 
         <span>
           <i>⌕</i>
-          &lt;text&gt;
+          &lt;Nomor telepon&gt;
         </span>
 
         <span>
           <i>✉</i>
-          &lt;text&gt;
+          &lt;Email&gt;
         </span>
       </div>
     </div>
@@ -48,14 +48,6 @@
     <div class="footer-bottom">
       <div class="site-container footer-bottom-inner">
         <span> © 2026 RPC Recruitment. Seluruh hak cipta dilindungi undang-undang. </span>
-
-        <div class="socials">
-          <span>in</span>
-
-          <span>◎</span>
-
-          <span>𝕏</span>
-        </div>
       </div>
     </div>
   </footer>

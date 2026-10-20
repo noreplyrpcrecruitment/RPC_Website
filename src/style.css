@@ -327,7 +327,8 @@ textarea {
   height: 46px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  text-align: center;
   color: #9aa5b2;
   font-size: 8px;
 }
