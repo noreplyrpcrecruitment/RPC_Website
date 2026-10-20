@@ -15,22 +15,42 @@
 
         <form class="application-form" @submit.prevent="submitApplication" novalidate>
           <label>Nama Lengkap <span>*</span></label>
-          <input v-model="form.name" type="text" placeholder="Masukkan nama lengkap Anda" />
+          <input
+            v-model="form.name"
+            type="text"
+            placeholder="Masukkan nama lengkap Anda"
+            :disabled="isSubmitting"
+          />
 
           <label>Email <span>*</span></label>
-          <input v-model="form.email" type="email" placeholder="Masukkan email Anda" />
+          <input
+            v-model="form.email"
+            type="email"
+            placeholder="Masukkan email Anda"
+            :disabled="isSubmitting"
+          />
 
           <label>Nomor Telepon <span>*</span></label>
-          <input v-model="form.phone" type="tel" placeholder="Masukkan nomor telepon Anda" />
+          <input
+            v-model="form.phone"
+            type="tel"
+            placeholder="Masukkan nomor telepon Anda"
+            :disabled="isSubmitting"
+          />
 
           <label>Alamat <span>*</span></label>
-          <textarea v-model="form.address" placeholder="Masukkan alamat Anda"></textarea>
+          <textarea
+            v-model="form.address"
+            placeholder="Masukkan alamat Anda"
+            :disabled="isSubmitting"
+          ></textarea>
 
           <label>Pendidikan Terakhir <span>*</span></label>
           <input
             v-model="form.education"
             type="text"
             placeholder="Masukkan pendidikan terakhir Anda"
+            :disabled="isSubmitting"
           />
 
           <!-- CV / RESUME -->
@@ -50,6 +70,7 @@
                 ref="cvInput"
                 type="file"
                 accept=".pdf,.doc,.docx"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('cv', $event)"
               />
             </label>
@@ -60,6 +81,7 @@
               class="remove-file"
               aria-label="Remove CV"
               title="Remove CV"
+              :disabled="isSubmitting"
               @click="removeFile('cv', 'cvInput')"
             >
               ×
@@ -83,6 +105,7 @@
                 ref="coverLetterInput"
                 type="file"
                 accept=".pdf,.doc,.docx"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('coverLetter', $event)"
               />
             </label>
@@ -93,6 +116,7 @@
               class="remove-file"
               aria-label="Remove cover letter"
               title="Remove cover letter"
+              :disabled="isSubmitting"
               @click="removeFile('coverLetter', 'coverLetterInput')"
             >
               ×
@@ -116,6 +140,7 @@
                 ref="photoInput"
                 type="file"
                 accept=".jpg,.jpeg,.png"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('photo', $event)"
               />
             </label>
@@ -126,6 +151,7 @@
               class="remove-file"
               aria-label="Remove photo"
               title="Remove photo"
+              :disabled="isSubmitting"
               @click="removeFile('photo', 'photoInput')"
             >
               ×
@@ -149,6 +175,7 @@
                 ref="ktpInput"
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('ktp', $event)"
               />
             </label>
@@ -159,6 +186,7 @@
               class="remove-file"
               aria-label="Remove KTP"
               title="Remove KTP"
+              :disabled="isSubmitting"
               @click="removeFile('ktp', 'ktpInput')"
             >
               ×
@@ -182,6 +210,7 @@
                 ref="skckInput"
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('skck', $event)"
               />
             </label>
@@ -192,6 +221,7 @@
               class="remove-file"
               aria-label="Remove SKCK"
               title="Remove SKCK"
+              :disabled="isSubmitting"
               @click="removeFile('skck', 'skckInput')"
             >
               ×
@@ -215,6 +245,7 @@
                 ref="healthCertificateInput"
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('healthCertificate', $event)"
               />
             </label>
@@ -225,6 +256,7 @@
               class="remove-file"
               aria-label="Remove health certificate"
               title="Remove health certificate"
+              :disabled="isSubmitting"
               @click="removeFile('healthCertificate', 'healthCertificateInput')"
             >
               ×
@@ -251,6 +283,7 @@
                 ref="workExperienceInput"
                 type="file"
                 accept=".pdf,.doc,.docx"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('workExperience', $event)"
               />
             </label>
@@ -261,6 +294,7 @@
               class="remove-file"
               aria-label="Remove work experience"
               title="Remove work experience"
+              :disabled="isSubmitting"
               @click="removeFile('workExperience', 'workExperienceInput')"
             >
               ×
@@ -284,6 +318,7 @@
                 ref="ijazahInput"
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"
+                :disabled="isSubmitting"
                 @change="handleFileUpload('ijazah', $event)"
               />
             </label>
@@ -294,6 +329,7 @@
               class="remove-file"
               aria-label="Remove Ijazah"
               title="Remove Ijazah"
+              :disabled="isSubmitting"
               @click="removeFile('ijazah', 'ijazahInput')"
             >
               ×
@@ -309,9 +345,17 @@
           <button
             type="submit"
             class="btn btn-primary submit-btn"
+            :class="{ 'is-submitting': isSubmitting }"
             :disabled="isSubmitting || isLoadingJob"
+            :aria-busy="isSubmitting"
           >
-            {{ isSubmitting ? 'Mengirim Lamaran...' : 'Kirim Lamaran →' }}
+            {{
+              isSubmitting
+                ? 'Mengirim Lamaran...'
+                : isLoadingJob
+                  ? 'Memuat Lowongan...'
+                  : 'Kirim Lamaran →'
+            }}
           </button>
         </form>
       </section>
@@ -460,6 +504,8 @@ export default {
     },
 
     handleFileUpload(type, event) {
+      if (this.isSubmitting) return
+
       const file = event.target.files?.[0]
 
       if (!file) {
@@ -506,6 +552,8 @@ export default {
     },
 
     removeFile(type, inputRef) {
+      if (this.isSubmitting) return
+
       this.form[type] = null
 
       const input = this.$refs[inputRef]
@@ -577,14 +625,10 @@ export default {
     },
 
     async submitApplication() {
-      if (this.isSubmitting) return
+      // Prevent duplicate submissions.
+      if (this.isSubmitting || this.isLoadingJob) return
 
       this.formError = ''
-
-      if (this.isLoadingJob) {
-        this.formError = 'Mohon tunggu sampai informasi lowongan selesai dimuat.'
-        return
-      }
 
       const validationError = this.validateForm()
 
@@ -606,6 +650,7 @@ export default {
         return
       }
 
+      // Disable the button immediately before any asynchronous work.
       this.isSubmitting = true
 
       try {
@@ -678,9 +723,33 @@ export default {
           })
         })
       } finally {
+        // Re-enable the button if submission fails or the page remains.
         this.isSubmitting = false
       }
     },
   },
 }
 </script>
+
+<style scoped>
+/* Submit button: disabled state */
+.submit-btn:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.45;
+  filter: grayscale(40%);
+  pointer-events: auto;
+}
+
+/* While the application is being submitted */
+.submit-btn.is-submitting {
+  cursor: not-allowed !important;
+}
+
+/* Smooth visual transition */
+.submit-btn {
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease,
+    background-color 0.2s ease;
+}
+</style>
