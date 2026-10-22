@@ -32,7 +32,7 @@
                 />
               </div>
 
-              <!-- Department: Text Input -->
+              <!-- Department -->
               <div class="admin-form-group">
                 <label>Department <span>*</span></label>
                 <input
@@ -53,6 +53,19 @@
                   <option value="Contract">Contract</option>
                   <option value="Internship">Internship</option>
                 </select>
+              </div>
+
+              <!-- Application Deadline -->
+              <div class="admin-form-group">
+                <label>Application Deadline <span>*</span></label>
+                <input
+                  v-model="form.deadline"
+                  type="date"
+                  :min="todayDate"
+                  :disabled="isSaving"
+                  required
+                />
+                <small>Last date for applicants to apply.</small>
               </div>
             </div>
 
@@ -153,8 +166,20 @@ export default {
         description: '',
         responsibilities: '',
         requirements: '',
+        deadline: '',
       },
     }
+  },
+
+  computed: {
+    todayDate() {
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+
+      return `${year}-${month}-${day}`
+    },
   },
 
   methods: {
@@ -193,6 +218,16 @@ export default {
         return
       }
 
+      if (!this.form.deadline) {
+        this.formError = 'Application Deadline is required.'
+        return
+      }
+
+      if (this.form.deadline < this.todayDate) {
+        this.formError = 'Application Deadline cannot be in the past.'
+        return
+      }
+
       this.isSaving = true
 
       try {
@@ -203,6 +238,7 @@ export default {
         console.log('Position:', this.form.title)
         console.log('Department:', this.form.department)
         console.log('Employment Type:', this.form.job_type)
+        console.log('Application Deadline:', this.form.deadline)
 
         // Insert into Supabase
         const { data, error } = await supabase
@@ -215,6 +251,7 @@ export default {
             description: this.form.description.trim(),
             responsibilities: this.form.responsibilities.trim(),
             requirements: this.form.requirements.trim(),
+            deadline: this.form.deadline,
           })
           .select()
           .single()
