@@ -55,17 +55,11 @@
                 </select>
               </div>
 
-              <!-- Application Deadline -->
+              <!-- Application Deadline (Optional) -->
               <div class="admin-form-group">
-                <label>Application Deadline <span>*</span></label>
-                <input
-                  v-model="form.deadline"
-                  type="date"
-                  :min="todayDate"
-                  :disabled="isSaving"
-                  required
-                />
-                <small>Last date for applicants to apply.</small>
+                <label>Application Deadline (Optional)</label>
+                <input v-model="form.deadline" type="date" :min="todayDate" :disabled="isSaving" />
+                <small> Leave empty if this position has no expiry date. </small>
               </div>
             </div>
 
@@ -187,7 +181,7 @@ export default {
       this.formError = ''
       this.successMessage = ''
 
-      // Validation
+      // Validate required fields
       if (!this.form.title.trim()) {
         this.formError = 'Position Title is required.'
         return
@@ -218,12 +212,8 @@ export default {
         return
       }
 
-      if (!this.form.deadline) {
-        this.formError = 'Application Deadline is required.'
-        return
-      }
-
-      if (this.form.deadline < this.todayDate) {
+      // Validate deadline only when provided
+      if (this.form.deadline && this.form.deadline < this.todayDate) {
         this.formError = 'Application Deadline cannot be in the past.'
         return
       }
@@ -238,7 +228,7 @@ export default {
         console.log('Position:', this.form.title)
         console.log('Department:', this.form.department)
         console.log('Employment Type:', this.form.job_type)
-        console.log('Application Deadline:', this.form.deadline)
+        console.log('Application Deadline:', this.form.deadline || null)
 
         // Insert into Supabase
         const { data, error } = await supabase
@@ -251,7 +241,7 @@ export default {
             description: this.form.description.trim(),
             responsibilities: this.form.responsibilities.trim(),
             requirements: this.form.requirements.trim(),
-            deadline: this.form.deadline,
+            deadline: this.form.deadline || null,
           })
           .select()
           .single()

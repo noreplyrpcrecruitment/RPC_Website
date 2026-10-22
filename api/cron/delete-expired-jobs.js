@@ -69,20 +69,7 @@ export default async function handler(req, res) {
 
     const jobIds = expiredJobs.map((job) => job.id)
 
-    // Preserve job titles in application history before deleting jobs.
-    for (const job of expiredJobs) {
-      const { error: historyError } = await supabaseAdmin
-        .from('applications')
-        .update({
-          job_title: job.title,
-        })
-        .eq('job_id', job.id)
-        .is('job_title', null)
-
-      if (historyError) {
-        throw historyError
-      }
-    }
+    // Preserve job titles in application history before deleting jobs
 
     // Delete only expired jobs.
     // Applications are preserved because the foreign key uses SET NULL.
